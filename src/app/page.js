@@ -216,22 +216,22 @@ export default async function Home() {
               {
                 label: "Free",
                 price: "£0/month",
-                href: "https://opencollective.com/open-coop/contribute/free-99617/checkout?interval=month&amount=0&name=&legalName=&email=&redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/free-99617/checkout?interval=month&amount=0&name=&legalName=&email=&redirect=https://planet.open.coop/welcome",
               },
               {
                 label: "Pioneer",
                 price: "£5/month",
-                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-14003/checkout?interval=month&amount=500&name=&legalName=&email=&redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-14003/checkout?interval=month&amount=500&name=&legalName=&email=&redirect=https://planet.open.coop/welcome",
               },
               {
                 label: "Pioneer+",
                 price: "£10/month",
-                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-61741/checkout?interval=month&amount=1000&name=&legalName=&email=&redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-61741/checkout?interval=month&amount=1000&name=&legalName=&email=&redirect=https://planet.open.coop/welcome",
               },
               {
                 label: "Catalyst",
                 price: "£50/month",
-                href: "https://opencollective.com/open-coop/contribute/catalyst-14004/checkout?interval=month&amount=5000&name=&legalName=&email=&redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/catalyst-14004/checkout?interval=month&amount=5000&name=&legalName=&email=&redirect=https://planet.open.coop/welcome",
               },
             ].map((tier) => (
               <a
