@@ -1,4 +1,4 @@
-import { DM_Sans, Space_Grotesk } from "next/font/google";
+import { DM_Sans, Sawarabi_Mincho } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -6,8 +6,9 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const sawarabiMincho = Sawarabi_Mincho({
+  variable: "--font-sawarabi-mincho",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -21,7 +22,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${spaceGrotesk.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${sawarabiMincho.variable} font-sans antialiased`}
       >
         {children}
       </body>

@@ -15,8 +15,8 @@
   --color-primary-dark: var(--primary-dark);
   --color-white: var(--white);
   --color-warm-bg: #F5F3EF;
-  --font-sans: var(--font-dm-sans);
-  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-sawarabi-mincho), Georgia, serif;
+  --font-display: var(--font-dm-sans);
 }
 
 body {
