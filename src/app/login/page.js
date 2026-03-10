@@ -6,7 +6,8 @@ import { useState } from "react";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState("email"); // "email" | "code"
+  const [token, setToken] = useState("");
+  const [step, setStep] = useState("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,10 +23,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email }),
       });
 
-      if (!res.ok) throw new Error("Failed to send code");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send code");
+
+      setToken(data.token);
       setStep("code");
-    } catch {
-      setError("Could not send code. Please try again.");
+    } catch (err) {
+      setError(err.message || "Could not send code. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -39,11 +43,12 @@ export default function LoginPage() {
     const result = await signIn("email-code", {
       email,
       code,
+      token,
       redirect: false,
     });
 
     if (result?.error) {
-      setError("Invalid code. Please try again.");
+      setError("Invalid or expired code. Please try again.");
       setLoading(false);
     } else {
       window.location.href = "/home";
@@ -106,6 +111,7 @@ export default function LoginPage() {
               onClick={() => {
                 setStep("email");
                 setCode("");
+                setToken("");
                 setError("");
               }}
               className="mt-4 text-sm text-foreground/50 hover:text-foreground"
@@ -115,9 +121,7 @@ export default function LoginPage() {
           </>
         )}
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
         <p className="mt-6 text-sm text-foreground/50 text-center">
           You need to be a member of{" "}
