@@ -13,13 +13,14 @@ function WelcomeContent() {
 
   // Try auto-signin using OC order ID
   useEffect(() => {
-    const orderId = searchParams.get("orderIdV2") || searchParams.get("orderId");
-    if (orderId && searchParams.get("status") === "PAID") {
+    const orderIdV2 = searchParams.get("orderIdV2");
+    const legacyOrderId = searchParams.get("orderId");
+    if ((orderIdV2 || legacyOrderId) && searchParams.get("status") === "PAID") {
       setAutoSigningIn(true);
       fetch("/api/auth/quick-signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderIdV2, legacyOrderId }),
       })
         .then((res) => res.json())
         .then((data) => {

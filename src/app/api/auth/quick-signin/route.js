@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
-async function findEmailByOrderId(orderIdV2) {
+async function findEmailByOrderId(orderIdV2, legacyOrderId) {
   const headers = { "Content-Type": "application/json" };
   if (process.env.OC_CLIENT_ID && process.env.OC_CLIENT_SECRET) {
     headers["Client-Id"] = process.env.OC_CLIENT_ID;
@@ -12,25 +12,29 @@ async function findEmailByOrderId(orderIdV2) {
     headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
   }
 
+  // Try v2 ID first, then legacy numeric ID
+  const orderRef = orderIdV2
+    ? `{ id: "${orderIdV2}" }`
+    : `{ legacyId: ${legacyOrderId} }`;
+
   const res = await fetch("https://api.opencollective.com/graphql/v2", {
     method: "POST",
     headers,
     body: JSON.stringify({
-      query: `
-        query($orderId: String!) {
-          order(order: { id: $orderId }) {
-            fromAccount {
-              emails
-              ... on Individual { email }
-            }
+      query: `{
+        order(order: ${orderRef}) {
+          fromAccount {
+            name
+            slug
+            emails
+            ... on Individual { email }
           }
         }
-      `,
-      variables: { orderId: orderIdV2 },
+      }`,
     }),
   });
   const data = await res.json();
-  console.log("OC order lookup result:", JSON.stringify(data));
+  console.log("OC order lookup:", JSON.stringify(data));
   const account = data?.data?.order?.fromAccount;
   return account?.email || account?.emails?.[0] || null;
 }
@@ -58,11 +62,11 @@ function createSession(email) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { email, orderId } = body;
+    const { email, orderIdV2, legacyOrderId } = body;
 
     // Try order-based sign-in first
-    if (orderId) {
-      const orderEmail = await findEmailByOrderId(orderId);
+    if (orderIdV2 || legacyOrderId) {
+      const orderEmail = await findEmailByOrderId(orderIdV2, legacyOrderId);
       if (orderEmail) {
         const sessionToken = createSession(orderEmail);
         const cookieStore = await cookies();
@@ -75,7 +79,7 @@ export async function POST(req) {
         });
         return NextResponse.json({ ok: true });
       }
-      console.log("OC order lookup returned no email for", orderId);
+      console.log("OC order lookup returned no email for", orderIdV2 || legacyOrderId);
     }
 
     // Fall back to email-based sign-in
