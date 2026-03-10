@@ -216,22 +216,22 @@ export default async function Home() {
               {
                 label: "Free",
                 price: "£0/month",
-                href: "https://opencollective.com/open-coop/contribute/free-member-98498/checkout?redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/free-99617",
               },
               {
-                label: "Supporter",
+                label: "Pioneer",
                 price: "£5/month",
-                href: "https://opencollective.com/open-coop/contribute/supporter-98499/checkout?redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-14003",
               },
               {
-                label: "Supporter+",
+                label: "Pioneer+",
                 price: "£10/month",
-                href: "https://opencollective.com/open-coop/contribute/supporter--98500/checkout?redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/planet-pioneer-61741",
               },
               {
-                label: "Champion",
+                label: "Catalyst",
                 price: "£50/month",
-                href: "https://opencollective.com/open-coop/contribute/champion-98501/checkout?redirect=https://planet.open.coop/login",
+                href: "https://opencollective.com/open-coop/contribute/catalyst-14004",
               },
             ].map((tier) => (
               <a
