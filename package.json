@@ -19,6 +19,7 @@
     "nodemailer": "^6.10.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "redis": "^5.11.0",
     "unstorage": "^1.17.4"
   },
   "devDependencies": {
