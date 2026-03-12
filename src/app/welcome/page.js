@@ -10,12 +10,16 @@ function WelcomeContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [autoSigningIn, setAutoSigningIn] = useState(false);
+  const [orderParams, setOrderParams] = useState(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [memberName, setMemberName] = useState(null);
 
-  // Try auto-signin using OC order ID
+  // Try auto-signin using OC order ID, store params for fallback
   useEffect(() => {
     const orderIdV2 = searchParams.get("orderIdV2");
     const legacyOrderId = searchParams.get("orderId");
     if ((orderIdV2 || legacyOrderId) && searchParams.get("status") === "PAID") {
+      setOrderParams({ orderIdV2, legacyOrderId });
       setAutoSigningIn(true);
       fetch("/api/auth/quick-signin", {
         method: "POST",
@@ -25,18 +29,16 @@ function WelcomeContent() {
         .then((res) => res.json())
         .then((data) => {
           if (data.ok) {
-            router.push("/home");
-          } else {
-            setAutoSigningIn(false);
-            router.replace("/welcome");
+            setMemberName(data.name || null);
+            setSignedIn(true);
           }
+          setAutoSigningIn(false);
         })
         .catch(() => {
           setAutoSigningIn(false);
-          router.replace("/welcome");
         });
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -47,7 +49,7 @@ function WelcomeContent() {
       const res = await fetch("/api/auth/quick-signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, ...orderParams }),
       });
       const data = await res.json();
 
@@ -62,7 +64,8 @@ function WelcomeContent() {
         return;
       }
 
-      router.push("/home");
+      setMemberName(data.name || null);
+      setSignedIn(true);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -78,6 +81,28 @@ function WelcomeContent() {
             Signing you in...
           </h1>
           <p className="text-foreground/60">One moment.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (signedIn) {
+    const firstName = memberName?.split(" ")[0];
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="w-full max-w-md text-center">
+          <h1 className="font-display text-4xl font-bold mb-4">
+            Welcome{firstName ? `, ${firstName}` : ""}!
+          </h1>
+          <p className="text-lg text-foreground/70 mb-8">
+            Thank you for joining The Open Co-op. We&rsquo;re glad you&rsquo;re here.
+          </p>
+          <button
+            onClick={() => router.push("/home")}
+            className="w-full rounded-lg bg-primary px-4 py-3 text-white font-medium hover:bg-primary-dark transition-colors"
+          >
+            Go to dashboard
+          </button>
         </div>
       </div>
     );
@@ -111,7 +136,7 @@ function WelcomeContent() {
             disabled={loading}
             className="w-full rounded-lg bg-primary px-4 py-3 text-white font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Continue to dashboard"}
+            {loading ? "Signing in..." : "Continue"}
           </button>
         </form>
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}

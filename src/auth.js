@@ -11,6 +11,7 @@ export async function auth() {
     return {
       user: {
         email: payload.email,
+        name: payload.name || null,
         isMember: payload.isMember ?? false,
       },
     };
