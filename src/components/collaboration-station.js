@@ -478,9 +478,12 @@ export default function CollaborationStation({
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold mb-8">
+      <h1 className="font-display text-3xl font-bold mb-1">
         {firstName ? `Hi, ${firstName}` : "Collaboration Station"}
       </h1>
+      <p className="text-foreground/50 mb-8">
+        Welcome to The Open Co-op&rsquo;s Collaboration Station
+      </p>
 
       {/* 3-column layout */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -673,7 +676,7 @@ export default function CollaborationStation({
             rel="noopener noreferrer"
             className="text-foreground/40 hover:text-primary transition-colors"
           >
-            {link.label} &nearr;
+            {link.label} {"\u2197"}
           </a>
         ))}
       </div>

@@ -320,7 +320,7 @@ export default function ProfilePage() {
             rel="noopener noreferrer"
             className="inline-block mt-2 text-xs text-primary hover:underline"
           >
-            Manage subscription on Open Collective &nearr;
+            Manage subscription on Open Collective {"\u2197"}
           </a>
         </div>
 
