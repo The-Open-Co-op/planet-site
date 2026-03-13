@@ -363,14 +363,22 @@ export default function CollaborationStation({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "help_requests" },
-        () => {
-          // Refetch help requests for simplicity
-          fetch("/api/help-requests")
-            .then((r) => r.json())
-            .then((data) => {
-              if (data.requests) setHelpRequests(data.requests);
-            })
-            .catch(() => {});
+        (payload) => {
+          // Only add if not already in state (avoids duplicating our own optimistic items)
+          setHelpRequests((prev) => {
+            const exists = prev.some(
+              (r) => r.id === payload.new.id || r.description === payload.new.description
+            );
+            if (exists) return prev;
+            return [
+              {
+                ...payload.new,
+                members: { name: null },
+                help_replies: [],
+              },
+              ...prev,
+            ];
+          });
         }
       )
       .subscribe();
