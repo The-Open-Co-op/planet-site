@@ -165,11 +165,16 @@ export default function GetStartedPage() {
         method: "POST",
         body: formData,
       });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Avatar upload failed:", res.status, text);
+        return;
+      }
       const data = await res.json();
       if (data.url) {
         await saveToProfile({ avatar_url: data.url });
       } else {
-        console.error("Avatar upload failed:", data.error);
+        console.error("Avatar upload: no URL returned", data);
       }
     } catch (err) {
       console.error("Avatar upload error:", err);
