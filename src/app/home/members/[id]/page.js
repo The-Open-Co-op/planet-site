@@ -2,17 +2,31 @@ import { supabase } from "@/lib/supabase";
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
 import ContactForm from "@/components/contact-form";
+import { slugify } from "@/lib/utils";
 
 export default async function MemberDetailPage({ params }) {
   const { id } = await params;
   const session = await auth();
 
-  const { data: member } = await supabase
-    .from("members")
-    .select("*")
-    .eq("id", id)
-    .limit(1)
-    .single();
+  // Try UUID first, then match by slugified name
+  let member;
+  const isUuid = /^[0-9a-f]{8}-/.test(id);
+  if (isUuid) {
+    const { data } = await supabase
+      .from("members")
+      .select("*")
+      .eq("id", id)
+      .limit(1)
+      .single();
+    member = data;
+  } else {
+    const { data: allMembers } = await supabase
+      .from("members")
+      .select("*");
+    member = (allMembers || []).find(
+      (m) => slugify(m.name) === id
+    );
+  }
 
   if (!member) return notFound();
 

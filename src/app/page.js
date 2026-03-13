@@ -28,7 +28,7 @@ export default async function Home() {
         </p>
         <div className="mt-10 flex gap-4">
           <a
-            href="#join"
+            href="/join"
             className="rounded-full bg-primary px-8 py-3 text-white font-medium hover:bg-primary-dark transition-colors"
           >
             Join us

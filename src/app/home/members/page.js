@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { slugify } from "@/lib/utils";
 
 export default async function MembersPage() {
   const { data: members, count } = await supabase
@@ -19,7 +20,7 @@ export default async function MembersPage() {
         {(members || []).map((member) => (
           <a
             key={member.id}
-            href={`/home/members/${member.id}`}
+            href={`/home/members/${slugify(member.name) || member.id}`}
             className="rounded-xl border border-foreground/10 bg-white p-4 hover:border-foreground/20 transition-colors text-center"
           >
             <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-foreground/5 overflow-hidden flex items-center justify-center">

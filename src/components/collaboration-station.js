@@ -23,10 +23,15 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
+function slugify(str) {
+  return (str || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 function MemberLink({ name, memberId }) {
+  const slug = slugify(name);
   return (
     <a
-      href={`/home/members/${memberId}`}
+      href={`/home/members/${slug || memberId}`}
       className="font-medium text-primary hover:underline"
     >
       {name || "A member"}
@@ -157,11 +162,12 @@ function FeedItem({ item, isNew, isOwn, onUndo }) {
 }
 
 // ─── Contact Icon ────────────────────────────────────────────
-function ContactIcon({ memberId }) {
+function ContactIcon({ memberId, name }) {
   if (!memberId) return null;
+  const slug = slugify(name);
   return (
     <a
-      href={`/home/members/${memberId}`}
+      href={`/home/members/${slug || memberId}`}
       title="Contact"
       className="inline-flex items-center ml-1.5 text-foreground/30 hover:text-primary transition-colors"
     >
@@ -196,7 +202,7 @@ function HelpRequestItem({ request, memberId, onReply, onDelete }) {
               name={request.members?.name}
               memberId={request.member_id}
             />
-            <ContactIcon memberId={request.member_id} />
+            <ContactIcon memberId={request.member_id} name={request.members?.name} />
             {" "}
             <span className="text-foreground/70">{request.description}</span>
           </p>
@@ -209,7 +215,7 @@ function HelpRequestItem({ request, memberId, onReply, onDelete }) {
                     memberId={reply.member_id}
                   />{" "}
                   can help
-                  <ContactIcon memberId={reply.member_id} />
+                  <ContactIcon memberId={reply.member_id} name={reply.members?.name} />
                 </p>
               ))}
             </div>
