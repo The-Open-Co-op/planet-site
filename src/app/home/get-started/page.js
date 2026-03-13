@@ -245,7 +245,7 @@ export default function GetStartedPage() {
               What skills can you offer?
             </h1>
             <p className="text-foreground/50 text-center mb-8">
-              Optional — skip if you&rsquo;re not sure yet.
+              Tap any that apply.
             </p>
 
             {skills.length > 0 && (
@@ -364,7 +364,7 @@ export default function GetStartedPage() {
               One last thing
             </h1>
             <p className="text-foreground/50 text-center mb-8">
-              Both optional — you can always change these later.
+              Nearly there.
             </p>
 
             <div className="space-y-8">
@@ -410,6 +410,14 @@ export default function GetStartedPage() {
 
               {/* Contact visibility toggle */}
               <label className="flex items-center gap-4 rounded-xl border-2 border-foreground/10 p-4 cursor-pointer hover:border-foreground/20 transition-colors">
+                <div className="flex-1">
+                  <span className="font-display font-bold text-sm block">
+                    Happy to be contacted by other members?
+                  </span>
+                  <span className="text-xs text-foreground/50">
+                    Your email will be visible on your profile to other members
+                  </span>
+                </div>
                 <div
                   className={`w-12 h-7 rounded-full relative transition-colors duration-200 shrink-0 ${
                     showContactDetails ? "bg-primary" : "bg-foreground/20"
@@ -422,14 +430,6 @@ export default function GetStartedPage() {
                         : "translate-x-0.5"
                     }`}
                   />
-                </div>
-                <div>
-                  <span className="font-display font-bold text-sm block">
-                    Happy to be contacted by other members?
-                  </span>
-                  <span className="text-xs text-foreground/50">
-                    Your email will be visible on your profile to other members
-                  </span>
                 </div>
               </label>
             </div>

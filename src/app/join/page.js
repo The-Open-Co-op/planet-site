@@ -39,7 +39,7 @@ export default function JoinPage() {
   return (
     <div className="h-screen flex flex-col items-center justify-center px-6 py-6">
       <div className="max-w-2xl w-full">
-        <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
+        <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
           Join The Open Co-op
         </h1>
         <p className="mt-3 text-foreground/70 leading-relaxed">

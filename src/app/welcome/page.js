@@ -100,9 +100,9 @@ function WelcomeContent() {
             You&rsquo;re now a member of The Open Co-op.
           </p>
           <p className="text-lg text-foreground/50 mb-10 leading-relaxed">
-            We&rsquo;re a community building PLANET &mdash; a digital
-            infrastructure owned by its members, not shareholders. Every
-            contribution matters, and yours starts now.
+            Thank you for joining. You&rsquo;ve taken a critical step to support
+            the development of a collaborative regenerative economy and
+            we&rsquo;re really happy to have you on board.
           </p>
           <button
             onClick={() => router.push("/home/get-started")}
@@ -110,14 +110,6 @@ function WelcomeContent() {
           >
             Let&rsquo;s get you set up &rarr;
           </button>
-          <p className="mt-6">
-            <button
-              onClick={() => router.push("/home")}
-              className="text-sm text-foreground/40 hover:text-foreground/60 transition-colors"
-            >
-              Skip to dashboard
-            </button>
-          </p>
         </div>
       </div>
     );

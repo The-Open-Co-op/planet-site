@@ -118,7 +118,7 @@ insert into tasks (title, description, url, category, is_universal, is_persisten
   ('Familiarise yourself with the Docs', null, 'https://docs.open.coop/', 'universal', true, false, 3),
   ('Check out the latest posts on the Blog', null, 'https://open.coop/blog/', 'universal', true, false, 4),
   ('Check out our Google Docs for more background', null, 'https://drive.google.com/drive/folders/0B5qDh_FMmLtONEFsYWc3Ql9YUWc?resourcekey=0-halS3Ugoii3XhLi8SNrSWQ&usp=sharing', 'universal', true, false, 5),
-  ('Email 3 people you trust to join The Open Co-op', null, null, 'universal', true, false, 6),
+  ('Email 3 people you trust to join The Open Co-op', null, 'mailto:?subject=Invitation%20to%20Collaboration&body=Hi%0A%0AI%27ve%20joined%20The%20Open%20Co-op%20to%20help%20catalyse%20the%20collaborative%2C%20regenerative%20economy.%0A%0AOur%20mission%20is%20to%20co-create%20PLANET%20%E2%80%94%20a%20member-owned%20co-operating%20system%20to%20support%20collaboration%20at%20scale.%0A%0AWe%27re%20a%20really%20friendly%2C%20collaborative%20bunch%20and%20would%20love%20to%20have%20you%20on%20board.%20Check%20out%20https%3A%2F%2Fcollab.open.coop%2F%20for%20more%20background%20and%20how%20to%20join.%0A%0AI%20really%20hope%20you%20can%20join%20us%20-%20together%20we%20are%20stronger.', 'universal', true, false, 6),
   ('Share about PLANET and The Open Co-op on social media', null, null, 'universal', true, false, 7),
   ('Browse the PLANET specs on GitHub and add comments or improvements', null, 'https://github.com/The-Open-Co-op/planet/tree/main/specs', 'universal', true, true, 8),
   ('Check out the PLANET Roadmap on GitHub and comment on or sign up for a task', null, 'https://github.com/orgs/The-Open-Co-op/projects/1', 'universal', true, true, 9);

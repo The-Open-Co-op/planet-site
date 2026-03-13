@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 export default function JoinFeedbackPage() {
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -21,6 +22,7 @@ export default function JoinFeedbackPage() {
         body: JSON.stringify({
           category: "join-feedback",
           message: message.trim(),
+          ...(email.trim() && { email: email.trim() }),
         }),
       });
 
@@ -67,6 +69,13 @@ export default function JoinFeedbackPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-10">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Your email (optional)"
+            className="w-full rounded-xl border border-foreground/15 bg-white px-4 py-3 text-sm placeholder:text-foreground/40 focus:border-primary focus:outline-none mb-3"
+          />
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}

@@ -114,6 +114,13 @@ export default async function DashboardPage() {
     .eq("title", "Download and read the Member Handbook")
     .is("url", null);
 
+  // One-time: set mailto URL on email invite task
+  await supabase
+    .from("tasks")
+    .update({ url: "mailto:?subject=Invitation%20to%20Collaboration&body=Hi%0A%0AI%27ve%20joined%20The%20Open%20Co-op%20to%20help%20catalyse%20the%20collaborative%2C%20regenerative%20economy.%0A%0AOur%20mission%20is%20to%20co-create%20PLANET%20%E2%80%94%20a%20member-owned%20co-operating%20system%20to%20support%20collaboration%20at%20scale.%0A%0AWe%27re%20a%20really%20friendly%2C%20collaborative%20bunch%20and%20would%20love%20to%20have%20you%20on%20board.%20Check%20out%20https%3A%2F%2Fcollab.open.coop%2F%20for%20more%20background%20and%20how%20to%20join.%0A%0AI%20really%20hope%20you%20can%20join%20us%20-%20together%20we%20are%20stronger." })
+    .eq("title", "Email 3 people you trust to join The Open Co-op")
+    .is("url", null);
+
   // Filter tasks for this member
   const memberInterests = member?.interests || [];
   const isFollower =

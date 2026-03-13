@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import MobileNav from "@/components/mobile-nav";
@@ -13,6 +14,18 @@ const navItems = [
 export default async function HomeLayout({ children }) {
   const session = await auth();
   if (!session) redirect("/login");
+
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isOnboarding = pathname.includes("/get-started");
+
+  if (isOnboarding) {
+    return (
+      <div className="min-h-screen">
+        <main className="flex-1">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -50,7 +63,7 @@ export default async function HomeLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 p-4 md:p-10 overflow-x-hidden md:h-screen md:overflow-hidden">{children}</main>
+      <main className="flex-1 min-w-0 p-4 md:p-10 overflow-x-hidden md:h-screen md:overflow-y-auto">{children}</main>
     </div>
   );
 }
