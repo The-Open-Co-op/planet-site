@@ -11,14 +11,14 @@ export default function MobileNav({ navItems, email }) {
 
   // Find current page label
   const current = navItems.find((item) => item.href === pathname);
-  const pageTitle = current?.label || "Collab";
+  const pageTitle = current?.label || "The Open Co-op";
 
   return (
     <div className="md:hidden">
       {/* Top bar */}
       <div className="flex items-center justify-between border-b border-foreground/10 bg-white px-4 py-3">
         <Link href="/home" className="font-display text-lg font-bold">
-          Collab
+          The Open Co-op
         </Link>
         <button
           onClick={() => setOpen(!open)}
@@ -69,9 +69,7 @@ export default function MobileNav({ navItems, email }) {
             <p className="text-xs text-foreground/50 mb-2 truncate px-3">
               {email}
             </p>
-            <div className="px-3">
-              <SignOutButton />
-            </div>
+            <SignOutButton />
           </div>
         </div>
       )}

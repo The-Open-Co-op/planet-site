@@ -22,7 +22,7 @@ export default async function HomeLayout({ children }) {
       {/* Sidebar (desktop) */}
       <aside className="w-64 shrink-0 border-r border-foreground/10 bg-white p-6 hidden md:block">
         <Link href="/" className="font-display text-xl font-bold block mb-8">
-          Collab <span className="text-foreground/40 font-normal text-sm">The Open Co-op</span>
+          The Open Co-op
         </Link>
         <nav className="space-y-1">
           {navItems.map((item) => (
@@ -42,7 +42,7 @@ export default async function HomeLayout({ children }) {
           >
             My Profile
           </Link>
-          <p className="text-xs text-foreground/50 mb-2 truncate px-3">
+          <p className="text-xs text-foreground/40 truncate px-3 mb-1">
             {session.user?.email}
           </p>
           <SignOutButton />
@@ -50,7 +50,7 @@ export default async function HomeLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 p-4 md:p-10 overflow-x-hidden">{children}</main>
+      <main className="flex-1 min-w-0 p-4 md:p-10 overflow-x-hidden md:h-screen md:overflow-y-auto">{children}</main>
     </div>
   );
 }

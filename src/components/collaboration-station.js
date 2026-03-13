@@ -324,7 +324,6 @@ export default function CollaborationStation({
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [completedIds, setCompletedIds] = useState(new Set(initialCompleted));
-  const [feedFilter, setFeedFilter] = useState("all");
   const [helpRequests, setHelpRequests] = useState(initialHelpRequests);
   const [newItemIds, setNewItemIds] = useState(new Set());
   const [feedItems, setFeedItems] = useState([
@@ -346,14 +345,7 @@ export default function CollaborationStation({
     })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date)));
 
-  const feed = feedItems
-    .filter(
-      (item) =>
-        feedFilter === "all" ||
-        (feedFilter === "completions" && item.type === "completion") ||
-        (feedFilter === "contributions" && item.type === "contribution")
-    )
-    .slice(0, 10);
+  const feed = feedItems.slice(0, 20);
 
   // Real-time subscriptions
   useEffect(() => {
@@ -544,9 +536,9 @@ export default function CollaborationStation({
       </p>
 
       {/* 3-column layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 lg:h-[calc(100vh-220px)]">
         {/* Left: Things You Can Do */}
-        <div>
+        <div className="lg:overflow-y-auto lg:pr-1">
           <h2 className="font-display text-lg font-bold mb-4">
             Things You Can Do
           </h2>
@@ -611,7 +603,7 @@ export default function CollaborationStation({
         </div>
 
         {/* Middle: Things We've Done */}
-        <div>
+        <div className="lg:overflow-y-auto lg:pr-1 flex flex-col">
           <h2 className="font-display text-lg font-bold mb-4">
             Things We&rsquo;ve Done
           </h2>
@@ -623,24 +615,7 @@ export default function CollaborationStation({
             allMembers={allMembers}
           />
 
-          {/* Filter tabs */}
-          <div className="flex gap-2 mt-4 mb-3">
-            {["all", "completions", "contributions"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFeedFilter(f)}
-                className={`text-xs rounded-full px-3 py-1 transition-colors ${
-                  feedFilter === f
-                    ? "bg-primary text-white"
-                    : "bg-foreground/5 text-foreground/50 hover:bg-foreground/10"
-                }`}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+          <div className="space-y-2 mt-4 flex-1 overflow-y-auto">
             {feed.length > 0 ? (
               feed.map((item) => (
                 <FeedItem
@@ -658,7 +633,7 @@ export default function CollaborationStation({
         </div>
 
         {/* Right: Can you help? */}
-        <div>
+        <div className="lg:overflow-y-auto lg:pr-1 flex flex-col">
           <h2 className="font-display text-lg font-bold mb-4">
             Can you help?
           </h2>
@@ -670,7 +645,7 @@ export default function CollaborationStation({
             allMembers={allMembers}
           />
 
-          <div className="space-y-3 mt-4">
+          <div className="space-y-3 mt-4 flex-1 overflow-y-auto">
             {helpRequests.length > 0 ? (
               helpRequests.map((request) => (
                 <HelpRequestItem

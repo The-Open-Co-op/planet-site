@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { unstable_noStore as noStore } from "next/cache";
 import { auth } from "@/auth";
 import { supabase } from "@/lib/supabase";
 import { getIssuesByLabels } from "@/lib/github";
@@ -7,6 +8,7 @@ import { getGoals, getRecentContributions } from "@/lib/opencollective";
 import CollaborationStation from "@/components/collaboration-station";
 
 export default async function DashboardPage() {
+  noStore();
   const session = await auth();
   const email = session?.user?.email;
 
