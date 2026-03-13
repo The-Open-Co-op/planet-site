@@ -339,6 +339,7 @@ export default function CollaborationStation({
       type: "completion",
       text: c.tasks?.title || "a task",
       taskId: c.task_id,
+      taskObj: allTasks.find((t) => t.id === c.task_id) || null,
       memberName: c.members?.name,
       memberId: c.member_id,
       date: c.completed_at,
@@ -354,16 +355,6 @@ export default function CollaborationStation({
   ].sort((a, b) => new Date(b.date) - new Date(a.date)));
 
   const feed = feedItems.slice(0, 20);
-
-  // Fetch help requests client-side to avoid server caching issues
-  useEffect(() => {
-    fetch(`/api/help-requests?t=${Date.now()}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.requests) setHelpRequests(data.requests);
-      })
-      .catch(() => {});
-  }, []);
 
   // Real-time subscriptions
   useEffect(() => {
@@ -448,6 +439,7 @@ export default function CollaborationStation({
           type: "completion",
           text: task.title,
           taskId: task.id,
+          taskObj: task,
           memberName: member?.name || firstName,
           memberId: member?.id,
           date: new Date().toISOString(),
@@ -483,10 +475,9 @@ export default function CollaborationStation({
           next.delete(item.taskId);
           return next;
         });
-        const restoredTask = allTasks.find((t) => t.id === item.taskId);
-        if (restoredTask) {
+        if (item.taskObj) {
           setTasks((prev) =>
-            prev.some((t) => t.id === restoredTask.id) ? prev : [restoredTask, ...prev].slice(0, 5)
+            prev.some((t) => t.id === item.taskObj.id) ? prev : [item.taskObj, ...prev].slice(0, 5)
           );
         }
         await fetch("/api/tasks/complete", {
@@ -504,7 +495,7 @@ export default function CollaborationStation({
         });
       }
     },
-    [allTasks]
+    []
   );
 
   // Contribution submit handler
