@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
+import ContactForm from "@/components/contact-form";
 
 export default async function MemberDetailPage({ params }) {
   const { id } = await params;
@@ -109,12 +110,9 @@ export default async function MemberDetailPage({ params }) {
         </div>
       )}
 
-      {!showContact && !isOwnProfile && (
-        <div className="rounded-xl border border-foreground/10 bg-foreground/5 p-4 mb-6">
-          <p className="text-sm text-foreground/40">
-            This member hasn&rsquo;t opted in to sharing contact details.
-          </p>
-        </div>
+      {/* Contact form — shown to other members (whether or not contact details are public) */}
+      {!isOwnProfile && (
+        <ContactForm memberId={member.id} memberName={member.name || "this member"} />
       )}
 
       {/* Links */}

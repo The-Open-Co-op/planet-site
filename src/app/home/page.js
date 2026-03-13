@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/auth";
 import { supabase } from "@/lib/supabase";
 import { getIssuesByLabels } from "@/lib/github";

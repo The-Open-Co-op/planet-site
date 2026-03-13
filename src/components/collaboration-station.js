@@ -167,7 +167,16 @@ function HelpRequestItem({ request, memberId, onReply }) {
             <MemberLink
               name={request.members?.name}
               memberId={request.member_id}
-            />{" "}
+            />
+            {request.member_id && (
+              <a
+                href={`/home/members/${request.member_id}`}
+                className="ml-1 text-[10px] text-primary hover:underline"
+              >
+                Contact
+              </a>
+            )}
+            {" "}
             <span className="text-foreground/70">{request.description}</span>
           </p>
           {request.help_replies?.length > 0 && (
@@ -179,6 +188,14 @@ function HelpRequestItem({ request, memberId, onReply }) {
                     memberId={reply.member_id}
                   />{" "}
                   can help
+                  {reply.member_id && (
+                    <a
+                      href={`/home/members/${reply.member_id}`}
+                      className="ml-1 text-primary hover:underline"
+                    >
+                      Contact
+                    </a>
+                  )}
                 </p>
               ))}
             </div>
