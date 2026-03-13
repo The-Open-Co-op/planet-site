@@ -152,12 +152,29 @@ function FeedItem({ item, isNew, isOwn, onUndo }) {
   );
 }
 
+// ─── Contact Icon ────────────────────────────────────────────
+function ContactIcon({ memberId }) {
+  if (!memberId) return null;
+  return (
+    <a
+      href={`/home/members/${memberId}`}
+      title="Contact"
+      className="inline-flex items-center ml-1.5 text-foreground/30 hover:text-primary transition-colors"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+      </svg>
+    </a>
+  );
+}
+
 // ─── Help Request Item ──────────────────────────────────────
-function HelpRequestItem({ request, memberId, onReply }) {
+function HelpRequestItem({ request, memberId, onReply, onDelete }) {
   const [replying, setReplying] = useState(false);
   const hasReplied = request.help_replies?.some(
     (r) => r.member_id === memberId
   );
+  const isOwn = request.member_id === memberId;
 
   async function handleHelp() {
     setReplying(true);
@@ -175,14 +192,7 @@ function HelpRequestItem({ request, memberId, onReply }) {
               name={request.members?.name}
               memberId={request.member_id}
             />
-            {request.member_id && (
-              <a
-                href={`/home/members/${request.member_id}`}
-                className="ml-1 text-[10px] text-primary hover:underline"
-              >
-                Contact
-              </a>
-            )}
+            <ContactIcon memberId={request.member_id} />
             {" "}
             <span className="text-foreground/70">{request.description}</span>
           </p>
@@ -195,14 +205,7 @@ function HelpRequestItem({ request, memberId, onReply }) {
                     memberId={reply.member_id}
                   />{" "}
                   can help
-                  {reply.member_id && (
-                    <a
-                      href={`/home/members/${reply.member_id}`}
-                      className="ml-1 text-primary hover:underline"
-                    >
-                      Contact
-                    </a>
-                  )}
+                  <ContactIcon memberId={reply.member_id} />
                 </p>
               ))}
             </div>
@@ -211,13 +214,21 @@ function HelpRequestItem({ request, memberId, onReply }) {
             <p className="text-xs text-foreground/40">
               {timeAgo(request.created_at)}
             </p>
-            {!hasReplied && !request.is_resolved && (
+            {!hasReplied && !request.is_resolved && !isOwn && (
               <button
                 onClick={handleHelp}
                 disabled={replying}
                 className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
               >
                 I can help
+              </button>
+            )}
+            {isOwn && (
+              <button
+                onClick={() => onDelete(request.id)}
+                className="text-xs text-foreground/30 hover:text-primary transition-colors"
+              >
+                Delete
               </button>
             )}
           </div>
@@ -564,6 +575,16 @@ export default function CollaborationStation({
     );
   }
 
+  // Help request delete handler
+  async function handleHelpDelete(requestId) {
+    setHelpRequests((prev) => prev.filter((r) => r.id !== requestId));
+    await fetch("/api/help-requests", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: requestId }),
+    });
+  }
+
   // Stats for momentum strip (derived from live feedItems state)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const weekItems = feedItems.filter((item) => item.date > weekAgo);
@@ -701,6 +722,7 @@ export default function CollaborationStation({
                   request={request}
                   memberId={member?.id}
                   onReply={handleHelpReply}
+                  onDelete={handleHelpDelete}
                 />
               ))
             ) : (
