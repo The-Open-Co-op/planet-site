@@ -501,19 +501,13 @@ export default function CollaborationStation({
     );
   }
 
-  // Stats for momentum strip
+  // Stats for momentum strip (derived from live feedItems state)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const weekCompletions = recentCompletions.filter(
-    (c) => c.completed_at > weekAgo
-  ).length;
-  const weekContributions = recentContributions.filter(
-    (c) => c.created_at > weekAgo
-  ).length;
-  const weekTotal = weekCompletions + weekContributions;
-  const activeMembers = new Set([
-    ...recentCompletions.filter((c) => c.completed_at > weekAgo).map((c) => c.member_id),
-    ...recentContributions.filter((c) => c.created_at > weekAgo).map((c) => c.member_id),
-  ]).size;
+  const weekItems = feedItems.filter((item) => item.date > weekAgo);
+  const weekTotal = weekItems.length;
+  const activeMembers = new Set(
+    weekItems.map((item) => item.memberId).filter(Boolean)
+  ).size;
 
   return (
     <div>

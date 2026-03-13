@@ -40,6 +40,8 @@ export async function POST(req) {
   return NextResponse.json({ ok: true });
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const { data: requests } = await supabase
     .from("help_requests")
