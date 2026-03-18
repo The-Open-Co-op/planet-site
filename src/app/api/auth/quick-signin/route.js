@@ -168,6 +168,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
 
+    const normalEmail = email.toLowerCase().trim();
     const fromOC = !!(orderIdV2 || legacyOrderId);
     const memberName = account?.name || ocName || null;
     const memberSlug = account?.slug || ocSlug || null;
@@ -176,7 +177,7 @@ export async function POST(req) {
     const { data: member } = await supabase
       .from("members")
       .select("id, name")
-      .eq("email", email)
+      .ilike("email", normalEmail)
       .limit(1)
       .single();
 

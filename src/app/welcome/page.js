@@ -26,7 +26,7 @@ function WelcomeContent() {
     const legacyOrderId = searchParams.get("orderId");
     if (
       (orderIdV2 || legacyOrderId) &&
-      searchParams.get("status") === "PAID"
+      ["PAID", "ACTIVE"].includes(searchParams.get("status"))
     ) {
       setOrderParams({ orderIdV2, legacyOrderId });
       setAutoSigningIn(true);
