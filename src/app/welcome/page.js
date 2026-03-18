@@ -23,22 +23,42 @@ function WelcomeContent() {
     ) {
       setOrderParams({ orderIdV2, legacyOrderId });
       setAutoSigningIn(true);
-      fetch("/api/auth/quick-signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderIdV2, legacyOrderId }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
+
+      let cancelled = false;
+      const maxAttempts = 5;
+      const delayMs = 3000;
+
+      async function trySignIn(attempt) {
+        try {
+          const res = await fetch("/api/auth/quick-signin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderIdV2, legacyOrderId }),
+          });
+          const data = await res.json();
+          if (cancelled) return;
+
           if (data.ok) {
             setMemberName(data.name || null);
             setSignedIn(true);
+            setAutoSigningIn(false);
+            return;
           }
+        } catch {
+          if (cancelled) return;
+        }
+
+        // Retry if we haven't exhausted attempts
+        if (attempt < maxAttempts && !cancelled) {
+          await new Promise((r) => setTimeout(r, delayMs));
+          if (!cancelled) await trySignIn(attempt + 1);
+        } else if (!cancelled) {
           setAutoSigningIn(false);
-        })
-        .catch(() => {
-          setAutoSigningIn(false);
-        });
+        }
+      }
+
+      trySignIn(1);
+      return () => { cancelled = true; };
     }
   }, [searchParams]);
 

@@ -105,7 +105,32 @@ export async function POST(req) {
         });
         return NextResponse.json({ ok: true, name: account.name });
       }
-      console.log("OC order lookup returned no email for", orderIdV2 || legacyOrderId);
+      // No email from OC API — try slug-based lookup in our DB
+      if (account.slug) {
+        console.log("OC order: no email, trying slug lookup for", account.slug);
+        const { data: memberBySlug } = await supabase
+          .from("members")
+          .select("id, email, name")
+          .eq("oc_slug", account.slug)
+          .limit(1)
+          .single();
+
+        if (memberBySlug) {
+          const sessionToken = createSession(memberBySlug.email, memberBySlug.name || account.name);
+          const cookieStore = await cookies();
+          cookieStore.set("session-token", sessionToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            maxAge: 30 * 24 * 60 * 60,
+            path: "/",
+          });
+          return NextResponse.json({ ok: true, name: memberBySlug.name || account.name });
+        }
+        console.log("OC order: slug not found in DB yet for", account.slug);
+      } else {
+        console.log("OC order lookup returned no email or slug for", orderIdV2 || legacyOrderId);
+      }
     }
 
     // Fall back to email-based sign-in

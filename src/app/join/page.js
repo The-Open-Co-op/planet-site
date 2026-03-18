@@ -46,7 +46,7 @@ export default function JoinPage() {
           We&rsquo;re working to catalyse the collaborative, regenerative economy.
         </p>
         <p className="mt-2 text-foreground/70 leading-relaxed">
-          Our mission is to co-create PLANET — a member-owned co-operating system
+          Our mission is to co-create <a href="/" className="text-primary hover:underline font-medium">PLANET</a> — a member-owned co-operating system
           to support collaboration at scale.
         </p>
 

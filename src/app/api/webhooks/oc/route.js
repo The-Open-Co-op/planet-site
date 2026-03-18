@@ -10,34 +10,56 @@ function mapOcTier(name) {
   return n || "free";
 }
 
+async function fetchEmailFromOC(slug) {
+  const headers = { "Content-Type": "application/json" };
+  if (process.env.OPEN_COLLECTIVE_API_KEY) {
+    headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
+  }
+
+  const res = await fetch("https://api.opencollective.com/graphql/v2", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      query: `{
+        account(slug: "${slug}") {
+          ... on Individual { email }
+          emails
+        }
+      }`,
+    }),
+  });
+
+  const data = await res.json();
+  const account = data?.data?.account;
+  return account?.email || account?.emails?.[0] || null;
+}
+
 export async function POST(req) {
   try {
     const event = await req.json();
     console.log("OC webhook received:", JSON.stringify(event));
 
-    const email =
-      event.data?.member?.memberAccount?.email ||
-      event.data?.member?.account?.email ||
-      event.data?.fromCollective?.email ||
-      event.data?.email;
+    const member = event.data?.member;
+    const mc = member?.memberCollective || member?.memberAccount || member?.account;
+
+    const name = mc?.name || event.data?.fromCollective?.name;
+    const slug = mc?.slug || event.data?.fromCollective?.slug;
+
+    // OC webhooks don't include email — fetch it via API using the slug
+    let email = mc?.email || event.data?.fromCollective?.email || event.data?.email;
+
+    if (!email && slug) {
+      console.log("OC webhook: no email in payload, fetching via API for slug:", slug);
+      email = await fetchEmailFromOC(slug);
+    }
 
     if (!email) {
-      console.log("OC webhook: no email found in payload");
+      console.log("OC webhook: no email found for", slug || "unknown");
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const name =
-      event.data?.member?.memberAccount?.name ||
-      event.data?.member?.account?.name ||
-      event.data?.fromCollective?.name;
-
-    const slug =
-      event.data?.member?.memberAccount?.slug ||
-      event.data?.member?.account?.slug ||
-      event.data?.fromCollective?.slug;
-
     const tierName =
-      event.data?.member?.tier?.name ||
+      member?.tier?.name ||
       event.data?.tier?.name ||
       event.data?.order?.tier?.name ||
       "free";
@@ -56,7 +78,7 @@ export async function POST(req) {
     if (error) {
       console.error("Supabase upsert error:", error.message);
     } else {
-      console.log("OC webhook: upserted member", email);
+      console.log("OC webhook: upserted member", email, name, slug);
       addBrevoContact({ email, name, tier: mapOcTier(tierName) });
     }
 
