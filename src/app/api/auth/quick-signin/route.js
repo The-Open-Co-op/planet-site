@@ -12,6 +12,30 @@ function mapOcTier(name) {
   return n || "free";
 }
 
+async function fetchEmailBySlug(slug) {
+  const headers = { "Content-Type": "application/json" };
+  if (process.env.OPEN_COLLECTIVE_API_KEY) {
+    headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
+  }
+
+  const res = await fetch("https://api.opencollective.com/graphql/v2", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      query: `{
+        account(slug: "${slug}") {
+          ... on Individual { email }
+          emails
+        }
+      }`,
+    }),
+  });
+
+  const data = await res.json();
+  const account = data?.data?.account;
+  return account?.email || account?.emails?.[0] || null;
+}
+
 async function findAccountByOrderId(orderIdV2, legacyOrderId) {
   const headers = { "Content-Type": "application/json" };
   if (process.env.OC_CLIENT_ID && process.env.OC_CLIENT_SECRET) {
@@ -105,9 +129,28 @@ export async function POST(req) {
         });
         return NextResponse.json({ ok: true, name: account.name });
       }
-      // No email from OC API — try slug-based lookup in our DB
+      // No email from order API — try fetching email by slug, then DB lookup
       if (account.slug) {
-        console.log("OC order: no email, trying slug lookup for", account.slug);
+        console.log("OC order: no email from order, trying slug-based approaches for", account.slug);
+
+        // First try fetching email directly from OC by slug
+        const slugEmail = await fetchEmailBySlug(account.slug);
+        if (slugEmail) {
+          console.log("OC order: got email via slug API for", account.slug);
+          await ensureMember(slugEmail, account.name, account.slug, mapOcTier(account.tier));
+          const sessionToken = createSession(slugEmail, account.name);
+          const cookieStore = await cookies();
+          cookieStore.set("session-token", sessionToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            maxAge: 30 * 24 * 60 * 60,
+            path: "/",
+          });
+          return NextResponse.json({ ok: true, name: account.name });
+        }
+
+        // Fall back to slug lookup in our DB
         const { data: memberBySlug } = await supabase
           .from("members")
           .select("id, email, name")
@@ -127,7 +170,7 @@ export async function POST(req) {
           });
           return NextResponse.json({ ok: true, name: memberBySlug.name || account.name });
         }
-        console.log("OC order: slug not found in DB yet for", account.slug);
+        console.log("OC order: could not resolve email for slug", account.slug);
       } else {
         console.log("OC order lookup returned no email or slug for", orderIdV2 || legacyOrderId);
       }
