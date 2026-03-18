@@ -7,7 +7,7 @@
 }
 
 :root {
-  --background: #F5F3EF;
+  --background: #EFF1F3;
   --foreground: #000000;
   --primary: #0066CC;
   --primary-dark: #005CB8;
@@ -20,7 +20,7 @@
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
   --color-white: var(--white);
-  --color-warm-bg: #F5F3EF;
+  --color-warm-bg: #EFF1F3;
   --font-sans: "Punctuation Fix", var(--font-sawarabi-mincho), Georgia, serif;
   --font-display: "Punctuation Fix", var(--font-dm-sans);
 }
