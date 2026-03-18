@@ -1,4 +1,7 @@
 import { getCollectiveStats } from "@/lib/opencollective";
+import { supabase } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 function formatCurrency(value, currency = "GBP") {
   return new Intl.NumberFormat("en-GB", {
@@ -10,7 +13,10 @@ function formatCurrency(value, currency = "GBP") {
 }
 
 export default async function Home() {
-  const stats = await getCollectiveStats().catch(() => null);
+  const [stats, memberCountResult] = await Promise.all([
+    getCollectiveStats().catch(() => null),
+    supabase.from("members").select("id", { count: "exact", head: true }).then(r => r.count).catch(() => null),
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,7 +52,7 @@ export default async function Home() {
             <div className="mt-14 flex gap-12 justify-center">
               <div className="text-center">
                 <p className="font-display text-4xl font-bold text-white">
-                  {stats.memberCount}
+                  {memberCountResult || stats.memberCount}
                 </p>
                 <p className="mt-1 text-sm font-medium text-white/60 uppercase tracking-wide">
                   Members

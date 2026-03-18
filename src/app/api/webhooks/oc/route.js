@@ -13,7 +13,7 @@ function mapOcTier(name) {
 async function fetchEmailFromOC(slug) {
   const headers = { "Content-Type": "application/json" };
   if (process.env.OPEN_COLLECTIVE_API_KEY) {
-    headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
+    headers["Personal-Token"] = process.env.OPEN_COLLECTIVE_API_KEY;
   }
 
   const res = await fetch("https://api.opencollective.com/graphql/v2", {

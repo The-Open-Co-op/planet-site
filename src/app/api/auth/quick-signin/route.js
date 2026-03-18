@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import { supabase } from "@/lib/supabase";
 import { addBrevoContact } from "@/lib/brevo";
 
+const OC_API = "https://api.opencollective.com/graphql/v2";
+const COLLECTIVE_SLUG = "open-coop";
+
 function mapOcTier(name) {
   const n = (name || "").toLowerCase();
   if (n.includes("catalyst")) return "catalyst";
@@ -12,59 +15,30 @@ function mapOcTier(name) {
   return n || "free";
 }
 
-async function fetchEmailBySlug(slug) {
+function ocHeaders() {
   const headers = { "Content-Type": "application/json" };
   if (process.env.OPEN_COLLECTIVE_API_KEY) {
-    headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
+    headers["Personal-Token"] = process.env.OPEN_COLLECTIVE_API_KEY;
   }
-
-  const res = await fetch("https://api.opencollective.com/graphql/v2", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      query: `{
-        account(slug: "${slug}") {
-          ... on Individual { email }
-          emails
-        }
-      }`,
-    }),
-  });
-
-  const data = await res.json();
-  const account = data?.data?.account;
-  return account?.email || account?.emails?.[0] || null;
+  return headers;
 }
 
 async function findAccountByOrderId(orderIdV2, legacyOrderId) {
-  const headers = { "Content-Type": "application/json" };
-  if (process.env.OC_CLIENT_ID && process.env.OC_CLIENT_SECRET) {
-    headers["Client-Id"] = process.env.OC_CLIENT_ID;
-    headers["Client-Secret"] = process.env.OC_CLIENT_SECRET;
-  }
-  if (process.env.OPEN_COLLECTIVE_API_KEY) {
-    headers["Api-Key"] = process.env.OPEN_COLLECTIVE_API_KEY;
-  }
-
   const orderRef = orderIdV2
     ? `{ id: "${orderIdV2}" }`
     : `{ legacyId: ${legacyOrderId} }`;
 
-  const res = await fetch("https://api.opencollective.com/graphql/v2", {
+  const res = await fetch(OC_API, {
     method: "POST",
-    headers,
+    headers: ocHeaders(),
     body: JSON.stringify({
       query: `{
         order(order: ${orderRef}) {
           fromAccount {
             name
             slug
-            emails
-            ... on Individual { email }
           }
-          tier {
-            name
-          }
+          tier { name }
         }
       }`,
     }),
@@ -73,11 +47,37 @@ async function findAccountByOrderId(orderIdV2, legacyOrderId) {
   console.log("OC order lookup:", JSON.stringify(data));
   const order = data?.data?.order;
   const account = order?.fromAccount;
-  const email = account?.email || account?.emails?.[0] || null;
-  const name = account?.name || null;
-  const slug = account?.slug || null;
-  const tier = order?.tier?.name || null;
-  return { email, name, slug, tier };
+  return {
+    name: account?.name || null,
+    slug: account?.slug || null,
+    tier: order?.tier?.name || null,
+  };
+}
+
+async function findEmailBySlugInCollective(slug) {
+  // Email is only accessible through the collective members query with Personal-Token
+  const res = await fetch(OC_API, {
+    method: "POST",
+    headers: ocHeaders(),
+    body: JSON.stringify({
+      query: `{
+        account(slug: "${COLLECTIVE_SLUG}") {
+          members(limit: 50, orderBy: { field: CREATED_AT, direction: DESC }) {
+            nodes {
+              account {
+                slug
+                ... on Individual { email }
+              }
+            }
+          }
+        }
+      }`,
+    }),
+  });
+  const data = await res.json();
+  const members = data?.data?.account?.members?.nodes || [];
+  const match = members.find((m) => m.account.slug === slug);
+  return match?.account?.email || null;
 }
 
 function createSession(email, name) {
@@ -94,7 +94,17 @@ async function ensureMember(email, name, ocSlug, ocTier) {
     .limit(1)
     .single();
 
-  if (existing) return existing.id;
+  if (existing) {
+    // Update existing member with OC details if we have them
+    const updates = {};
+    if (name) updates.name = name;
+    if (ocSlug) updates.oc_slug = ocSlug;
+    if (ocTier) updates.oc_tier = ocTier;
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("members").update(updates).eq("id", existing.id);
+    }
+    return existing.id;
+  }
 
   // New member — add to Brevo
   addBrevoContact({ email, name, tier: ocTier });
@@ -108,80 +118,60 @@ async function ensureMember(email, name, ocSlug, ocTier) {
   return created?.id;
 }
 
+function setSessionCookie(cookieStore, token) {
+  cookieStore.set("session-token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60,
+    path: "/",
+  });
+}
+
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { email, orderIdV2, legacyOrderId } = body;
+    const { email, orderIdV2, legacyOrderId, ocName, ocSlug, ocTier } = body;
+
+    let account = null;
 
     // Try order-based sign-in first
     if (orderIdV2 || legacyOrderId) {
-      const account = await findAccountByOrderId(orderIdV2, legacyOrderId);
-      if (account.email) {
-        await ensureMember(account.email, account.name, account.slug, mapOcTier(account.tier));
-        const sessionToken = createSession(account.email, account.name);
-        const cookieStore = await cookies();
-        cookieStore.set("session-token", sessionToken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "lax",
-          maxAge: 30 * 24 * 60 * 60,
-          path: "/",
-        });
-        return NextResponse.json({ ok: true, name: account.name });
-      }
-      // No email from order API — try fetching email by slug, then DB lookup
-      if (account.slug) {
-        console.log("OC order: no email from order, trying slug-based approaches for", account.slug);
+      account = await findAccountByOrderId(orderIdV2, legacyOrderId);
 
-        // First try fetching email directly from OC by slug
-        const slugEmail = await fetchEmailBySlug(account.slug);
-        if (slugEmail) {
-          console.log("OC order: got email via slug API for", account.slug);
-          await ensureMember(slugEmail, account.name, account.slug, mapOcTier(account.tier));
-          const sessionToken = createSession(slugEmail, account.name);
+      if (account.slug) {
+        // Try to get email from collective members API
+        const memberEmail = await findEmailBySlugInCollective(account.slug);
+        if (memberEmail) {
+          console.log("OC order: got email via collective members for", account.slug);
+          const tier = mapOcTier(account.tier);
+          await ensureMember(memberEmail, account.name, account.slug, tier);
+          const sessionToken = createSession(memberEmail, account.name);
           const cookieStore = await cookies();
-          cookieStore.set("session-token", sessionToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "lax",
-            maxAge: 30 * 24 * 60 * 60,
-            path: "/",
-          });
+          setSessionCookie(cookieStore, sessionToken);
           return NextResponse.json({ ok: true, name: account.name });
         }
+      }
 
-        // Fall back to slug lookup in our DB
-        const { data: memberBySlug } = await supabase
-          .from("members")
-          .select("id, email, name")
-          .eq("oc_slug", account.slug)
-          .limit(1)
-          .single();
-
-        if (memberBySlug) {
-          const sessionToken = createSession(memberBySlug.email, memberBySlug.name || account.name);
-          const cookieStore = await cookies();
-          cookieStore.set("session-token", sessionToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "lax",
-            maxAge: 30 * 24 * 60 * 60,
-            path: "/",
-          });
-          return NextResponse.json({ ok: true, name: memberBySlug.name || account.name });
-        }
-        console.log("OC order: could not resolve email for slug", account.slug);
-      } else {
-        console.log("OC order lookup returned no email or slug for", orderIdV2 || legacyOrderId);
+      // Couldn't get email from OC — ask the user
+      if (!email) {
+        console.log("OC order: no email available, requesting from user. Slug:", account.slug);
+        return NextResponse.json(
+          { error: "need_email", name: account.name, slug: account.slug, tier: account.tier },
+          { status: 400 }
+        );
       }
     }
 
-    // Fall back to email-based sign-in
+    // Email-based sign-in (either direct or after OC lookup failed)
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
 
     const fromOC = !!(orderIdV2 || legacyOrderId);
+    const memberName = account?.name || ocName || null;
+    const memberSlug = account?.slug || ocSlug || null;
+    const memberTier = account?.tier || ocTier || null;
 
     const { data: member } = await supabase
       .from("members")
@@ -194,21 +184,16 @@ export async function POST(req) {
       return NextResponse.json({ error: "not_a_member" }, { status: 403 });
     }
 
-    if (!member && fromOC) {
-      await ensureMember(email, null, null, null);
+    if (fromOC) {
+      await ensureMember(email, memberName, memberSlug, memberTier ? mapOcTier(memberTier) : null);
     }
 
-    const sessionToken = createSession(email, member?.name);
+    const displayName = member?.name || memberName;
+    const sessionToken = createSession(email, displayName);
     const cookieStore = await cookies();
-    cookieStore.set("session-token", sessionToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60,
-      path: "/",
-    });
+    setSessionCookie(cookieStore, sessionToken);
 
-    return NextResponse.json({ ok: true, name: member?.name });
+    return NextResponse.json({ ok: true, name: displayName });
   } catch (error) {
     console.error("Quick sign-in error:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });

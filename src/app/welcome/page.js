@@ -11,10 +11,17 @@ function WelcomeContent() {
   const [loading, setLoading] = useState(false);
   const [autoSigningIn, setAutoSigningIn] = useState(false);
   const [orderParams, setOrderParams] = useState(null);
+  const [ocAccount, setOcAccount] = useState(null);
   const [signedIn, setSignedIn] = useState(false);
   const [memberName, setMemberName] = useState(null);
 
   useEffect(() => {
+    // Free signup — already signed in by the API
+    if (searchParams.get("free") === "1") {
+      setSignedIn(true);
+      return;
+    }
+
     const orderIdV2 = searchParams.get("orderIdV2");
     const legacyOrderId = searchParams.get("orderId");
     if (
@@ -24,41 +31,26 @@ function WelcomeContent() {
       setOrderParams({ orderIdV2, legacyOrderId });
       setAutoSigningIn(true);
 
-      let cancelled = false;
-      const maxAttempts = 5;
-      const delayMs = 3000;
-
-      async function trySignIn(attempt) {
-        try {
-          const res = await fetch("/api/auth/quick-signin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderIdV2, legacyOrderId }),
-          });
-          const data = await res.json();
-          if (cancelled) return;
-
+      fetch("/api/auth/quick-signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderIdV2, legacyOrderId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
           if (data.ok) {
             setMemberName(data.name || null);
             setSignedIn(true);
-            setAutoSigningIn(false);
-            return;
+          } else if (data.error === "need_email") {
+            // OC can't provide email — show form immediately
+            setOcAccount({ name: data.name, slug: data.slug, tier: data.tier });
+            if (data.name) setMemberName(data.name);
           }
-        } catch {
-          if (cancelled) return;
-        }
-
-        // Retry if we haven't exhausted attempts
-        if (attempt < maxAttempts && !cancelled) {
-          await new Promise((r) => setTimeout(r, delayMs));
-          if (!cancelled) await trySignIn(attempt + 1);
-        } else if (!cancelled) {
           setAutoSigningIn(false);
-        }
-      }
-
-      trySignIn(1);
-      return () => { cancelled = true; };
+        })
+        .catch(() => {
+          setAutoSigningIn(false);
+        });
     }
   }, [searchParams]);
 
@@ -71,7 +63,13 @@ function WelcomeContent() {
       const res = await fetch("/api/auth/quick-signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, ...orderParams }),
+        body: JSON.stringify({
+          email,
+          ...orderParams,
+          ocName: ocAccount?.name,
+          ocSlug: ocAccount?.slug,
+          ocTier: ocAccount?.tier,
+        }),
       });
       const data = await res.json();
 
@@ -135,19 +133,26 @@ function WelcomeContent() {
     );
   }
 
+  const firstName = memberName?.split(" ")[0];
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md text-center">
-        <h1 className="font-display text-4xl font-bold mb-1">Welcome to</h1>
-        <h1 className="font-display text-4xl font-bold mb-4">
-          The Open Co-op
+        <h1 className="font-display text-4xl font-bold mb-1">
+          {firstName ? `Hi ${firstName}!` : "Welcome to"}
         </h1>
+        {!firstName && (
+          <h1 className="font-display text-4xl font-bold mb-4">
+            The Open Co-op
+          </h1>
+        )}
         <p className="text-lg text-foreground/70 mb-6">
           Thank you for joining us.
         </p>
         <p className="text-foreground/60 mb-8">
-          Enter the email you used on Open Collective to go straight to the
-          member area.
+          {orderParams
+            ? "Please confirm the email you used on Open Collective to complete your sign-in."
+            : "Enter the email you used on Open Collective to go straight to the member area."}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
