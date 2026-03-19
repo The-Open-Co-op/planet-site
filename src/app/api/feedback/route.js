@@ -45,7 +45,7 @@ export async function POST(req) {
       secure: false,
       auth: {
         user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_API_KEY,
+        pass: process.env.BREVO_SMTP_KEY,
       },
     });
 
