@@ -35,13 +35,13 @@ export default async function MemberDetailPage({ params }) {
     supabase
       .from("contributions")
       .select("*")
-      .eq("member_id", id)
+      .eq("member_id", member.id)
       .order("created_at", { ascending: false })
       .limit(10),
     supabase
       .from("task_completions")
       .select("*, tasks(title)")
-      .eq("member_id", id)
+      .eq("member_id", member.id)
       .order("completed_at", { ascending: false })
       .limit(10),
   ]);
