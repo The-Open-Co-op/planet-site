@@ -85,24 +85,16 @@ function TaskItem({ task, onComplete, isCompleted, isPersistent }) {
       </button>
       <div className="flex-1 min-w-0">
         <span className="font-display font-bold text-sm">
-          {task.title}
-          {task.url && (
+          {task.url ? (
             <a
               href={task.url}
               {...(task.url.startsWith("mailto:") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-              className="inline-flex items-center ml-1.5 text-foreground/30 hover:text-primary transition-colors align-middle"
-              title={task.url.startsWith("mailto:") ? "Send email" : task.url}
+              className="hover:text-primary transition-colors"
             >
-              {task.url.startsWith("mailto:") ? (
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                </svg>
-              ) : (
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-              )}
+              {task.title}
             </a>
+          ) : (
+            task.title
           )}
         </span>
         {task.description && (
@@ -628,6 +620,21 @@ export default function CollaborationStation({
             Things You Can Do
           </h2>
           <div className="space-y-3">
+            {/* Highlighted demo feedback CTA */}
+            <a
+              href="/demo/planet-onboarding"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-xl border-2 border-primary bg-white p-4 animate-pulse-border transition-colors hover:bg-primary/5"
+            >
+              <p className="text-sm font-medium">
+                View and feedback on the PLANET demo
+              </p>
+              <p className="text-xs text-foreground/50 mt-1">
+                See the latest designs and share your thoughts
+              </p>
+            </a>
+
             {tasks.length > 0 ? (
               tasks.map((task) => (
                 <TaskItem

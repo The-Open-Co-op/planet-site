@@ -106,7 +106,7 @@ export default function FeedbackPage() {
   return (
     <div className="flex flex-col lg:flex-row gap-10">
       {/* Left column — submit form */}
-      <div className="lg:w-96 shrink-0">
+      <div className="lg:w-1/2">
         <h1 className="font-display text-3xl font-bold mb-2">
           Feedback & Questions
         </h1>
@@ -158,7 +158,7 @@ export default function FeedbackPage() {
       </div>
 
       {/* Right column — feedback received */}
-      <div className="flex-1 min-w-0">
+      <div className="lg:w-1/2 min-w-0">
         <h2 className="font-display text-lg font-bold mb-4">Feedback received</h2>
 
         {loadingFeed ? (
