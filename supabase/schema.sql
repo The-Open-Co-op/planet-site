@@ -87,8 +87,11 @@ create table feedback (
   id uuid primary key default gen_random_uuid(),
   member_id uuid references members(id),
   email text,
-  category text, -- 'collab', 'planet', 'governance', 'other'
+  category text, -- 'collab', 'planet', 'governance', 'other', 'demo'
   message text not null,
+  demo_slug text,       -- e.g. 'planet-onboarding'
+  demo_step text,       -- e.g. 'chat'
+  demo_step_title text, -- e.g. 'The payoff'
   created_at timestamp with time zone default now()
 );
 
