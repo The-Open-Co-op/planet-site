@@ -22,6 +22,25 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
+export async function DELETE(req) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const { id } = await req.json();
+  if (!id) {
+    return NextResponse.json({ error: "ID required" }, { status: 400 });
+  }
+
+  const { error } = await supabase.from("feedback").delete().eq("id", id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req) {
   const session = await auth();
   const { category, message, demo_slug, demo_step, demo_step_title } = await req.json();

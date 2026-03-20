@@ -73,6 +73,10 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
     ? `Step: ${demoStep.title}`
     : null;
 
+  const btnStyle = {
+    fontFamily: "system-ui, -apple-system, sans-serif",
+  };
+
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
       <iframe
@@ -97,7 +101,7 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
           position: "fixed",
           bottom: 24,
           right: 24,
-          background: "#1a1a1a",
+          background: "#0066CC",
           color: "#fff",
           border: "none",
           borderRadius: 12,
@@ -107,6 +111,7 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
           cursor: "pointer",
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
           zIndex: 1000,
+          ...btnStyle,
         }}
       >
         Feedback
@@ -126,6 +131,7 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
             boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
             padding: 24,
             zIndex: 1001,
+            ...btnStyle,
           }}
         >
           {!user ? (
@@ -144,13 +150,14 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
                 style={{
                   display: "block",
                   textAlign: "center",
-                  background: "#1a1a1a",
+                  background: "#0066CC",
                   color: "#fff",
                   borderRadius: 10,
                   padding: "12px 20px",
                   fontSize: 14,
                   fontWeight: 600,
                   textDecoration: "none",
+                  ...btnStyle,
                 }}
               >
                 Join The Open Co-op
@@ -162,14 +169,28 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
               <p style={{ fontSize: 15, fontWeight: 600, margin: "0 0 8px" }}>
                 Thank you!
               </p>
-              <p style={{ fontSize: 14, color: "#666", margin: "0 0 16px" }}>
+              <p style={{ fontSize: 14, color: "#666", margin: "0 0 12px" }}>
                 Your feedback has been recorded.
               </p>
+              <a
+                href="https://collab.open.coop/home/feedback"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  fontSize: 13,
+                  color: "#0066CC",
+                  marginBottom: 12,
+                }}
+              >
+                View all feedback &rarr;
+              </a>
+              <br />
               <button
                 onClick={() => setSent(false)}
                 style={{
                   fontSize: 13,
-                  color: "#0066cc",
+                  color: "#0066CC",
                   background: "none",
                   border: "none",
                   cursor: "pointer",
@@ -214,7 +235,7 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
                 style={{
                   marginTop: 12,
                   width: "100%",
-                  background: sending || !message.trim() ? "#ccc" : "#1a1a1a",
+                  background: sending || !message.trim() ? "#ccc" : "#0066CC",
                   color: "#fff",
                   border: "none",
                   borderRadius: 10,
@@ -222,6 +243,7 @@ export default function DemoClient({ demoSlug, demoTitle, demoUrl, user }) {
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: sending || !message.trim() ? "default" : "pointer",
+                  ...btnStyle,
                 }}
               >
                 {sending ? "Sending..." : "Send feedback"}
